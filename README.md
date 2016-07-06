@@ -1,6 +1,13 @@
 # SLCosmo
 
-Cosmological parameter inference from samples of time delay lenses, initially in the context of the second [Time Delay Challenge](http://timedelaychallenge.org).
+Cosmological parameter inference from samples of time delay lenses, 
+initially in the context of the second [Time Delay 
+Challenge](http://timedelaychallenge.org). In the simple TDC2 ensemble 
+analysis, the inputs are expected to be samples drawn from PDFs for the 
+time delays plus likelhood functions for the corresponding Fermat 
+potential differences (as could, in principle, be provided by the lens 
+modelers); the output in the TDC2 case is a sampled posterior PDF for the 
+Hubble constant, H0.
 
 ## Demo
 
