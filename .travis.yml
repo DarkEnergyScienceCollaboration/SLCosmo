@@ -2,8 +2,8 @@ language: python
 
 install:
   - pip install coveralls
-  - setup slcosmo
-
+  - source setups/setup.sh
+  
 script:
   - nosetests --with-coverage --cover-package=desc.slcosmo
 
