@@ -1,4 +1,5 @@
 # SLCosmo
+[![Build Status](https://travis-ci.org/DarkEnergyScienceCollaboration/SLCosmo.svg?branch=master)](https://travis-ci.org/DarkEnergyScienceCollaboration/SLCosmo)
 
 Cosmological parameter inference from samples of time delay lenses, 
 initially in the context of the second [Time Delay 
