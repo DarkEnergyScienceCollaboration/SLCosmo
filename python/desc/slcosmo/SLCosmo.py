@@ -71,9 +71,9 @@ class SLCosmo(object):
             DeltaFP_obs = DeltaFP_true + DeltaFP_err * np.random.rand(Ndt)
 
             # What are its posterior sample time delays?
-            dt_err = 2.0 * np.ones(Ndt) # BUG: dtsigma=2.0 DAYS SHOULD BE A KWARG
+            dt_sigma = 2.0 * np.ones(Ndt) # BUG: dt_sigma=2.0 DAYS SHOULD BE A KWARG
             Nsamples = 1000  # BUG: Nsamples=1000 SHOULD BE A KWARG
-            dt_obs = dt_true + dt_err * np.random.randn(Nsamples,Ndt)
+            dt_obs = dt_true + dt_sigma * np.random.randn(Nsamples, Ndt)
 
             # Create a TDC2 ensemble object and have it write itself out:
             filename = 'mock_time_delays_'+str(k)+'.txt'
@@ -83,14 +83,15 @@ class SLCosmo(object):
             self.lenses[k].DeltaFP_obs = DeltaFP_obs
             self.lenses[k].DeltaFP_err = DeltaFP_err
             self.lenses[k].Q = Q
+            # BUG: ALL OF THE ABOVE SHOULD PROBABLY BE HANDLED BY A "LOAD" METHOD
             self.lenses[k].write_out_to(filename)
 
         return
 
-    def read_in_time_delays(self, tdc2samplefiles):
+    def read_in_time_delay_samples(self, tdc2samplefiles):
         '''
         Each tdc2samplefile is a multi-column plain text file, with a header
-        marked by '#' marks at the start of each line and then a set of Fermat
+        marked by '#' marks at the start of each line and containing a set of Fermat
         potential information that we need. The samples are stored in a 2D
         numpy array with one row for each lens, and one column for each time
         delay. Doubles will only have one time delay
@@ -135,7 +136,7 @@ class SLCosmo(object):
         #         Ns = lens.Nsamples * lens.Ndelays
         #         for j in range(lens.Nsamples):
         #             for i in len(lens.Ndelays):
-        #                 np.append(logL, gaussian_function(XXXXX))
+        #                 np.append(logL, log_gaussian_function(XXXXX))
         #         np.append(jointlogL, (np.logaddexp(logL) - np.log(Ns)))
         #     self.log_likelihoods[k] = np.sum(jointlogL)
 
@@ -151,7 +152,7 @@ class SLCosmo(object):
         can compute the posterior mean and standard deviation for each
         cosmological parameter.
         '''
-        H0mean = np.sum(self.weights * self.cosmopars['H0'])/np.sum(self.weights)
+        H0mean = np.sum(self.weights * self.cosmopars['H0']) / np.sum(self.weights)
         # BUG: NO STANDARD DEVIATION YET
         print("Posterior mean H0 = ",H0mean)
         return
