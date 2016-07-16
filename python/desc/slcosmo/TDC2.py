@@ -33,6 +33,13 @@ class TDC2ensemble(object):
         """
         Read in both the posterior sample time delays and the Fermat potential
         header information, and store it for re-use.
+
+        Possible failure modes:
+        1. File does not exist
+        2. File has no samples in it
+        3. File has no header in it
+        4. Samples are not 2D numpy array
+        5. Array has wrong number of columns (time delays - should be 1 or 3, and equal to Ndt)
         """
         self.source = tdc2samplefile
         self.samples = np.loadtxt(self.source,skiprows=18)
@@ -46,6 +53,10 @@ class TDC2ensemble(object):
         """
         Write out both the posterior sample time delays and the Fermat potential
         header information in a plain text file.
+
+        Possible failure modes:
+        1. Samples array has no samples in it, enev if Nsamples is not None
+        2. File is not actually written
         """
         if self.Nsamples is None:
             print("No samples to write out, skipping.")

@@ -28,7 +28,7 @@ class SLCosmo(object):
        real, aiming to recover the "true" cosmological parameters.
 
     2. Analyze a set of TDC2 sample files, reading them in and inferring
-       the cosmological parameters. 
+       the cosmological parameters.
     '''
     def __init__(self):
         self.cosmopars = {'H0':None}
@@ -46,6 +46,9 @@ class SLCosmo(object):
         Make a mock dataset of Nlenses lens systems, and write it out as
         in a set of correctly formatted files. True time delays and Fermat
         potentials are drawn randomly from plausible distributions.
+
+        Possible failure modes:
+        1. Simulated posterior time delays have incorrect width
         '''
         self.Nlenses = Nlenses
         self.lenses = []
@@ -65,7 +68,7 @@ class SLCosmo(object):
 
             # What are its observed Fermat potential differences?
             DeltaFP_err = 50.0 * np.ones(Ndt) # BUG: USE 4% ERRORS INSTEAD, dfperr=4.0 SHOULD BE A KWARG
-            DeltaFP_obs = DeltaFP_true + DeltaFP_err * np.random.randn(Ndt)
+            DeltaFP_obs = DeltaFP_true + DeltaFP_err * np.random.rand(Ndt)
 
             # What are its posterior sample time delays?
             dt_err = 2.0 * np.ones(Ndt) # BUG: dtsigma=2.0 DAYS SHOULD BE A KWARG
