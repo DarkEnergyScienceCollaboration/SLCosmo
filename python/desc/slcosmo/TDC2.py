@@ -13,6 +13,15 @@ class TDC2ensemble(object):
 
     This class is a data structure, for storing all the information provided
     in a TDC2 inferred time delay sample file.
+
+    Use cases:
+
+    1. Get samples and header information from a file
+
+    2. Enable SLCosmo factory method to create mock TDC2 ensembles from scratch
+
+    3. Write mock samples and header information to a file
+
     """
     def __init__(self):
         self.source = None

@@ -21,6 +21,14 @@ class SLCosmo(object):
 
     The H0 values will be drawn from a suitable prior, and each assigned a
     log likelihood value, which is finally converted to a posterior weight.
+
+    Use cases:
+
+    1. Make a set of mock TDC2 sample ensembles, and analyze them as if they were
+       real, aiming to recover the "true" cosmological parameters.
+
+    2. Analyze a set of TDC2 sample files, reading them in and inferring
+       the cosmological parameters. 
     '''
     def __init__(self):
         self.cosmopars = {'H0':None}
