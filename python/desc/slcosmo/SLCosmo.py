@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import desc.slcosmo
 
@@ -24,6 +25,9 @@ class SLCosmo(object):
     def __init__(self):
         self.cosmopars = {'H0':None}
         self.cosmotruth = {'H0':None}
+        self.H0_prior_mean = 70.0
+        self.H0_prior_width = 7.0
+        self.Npriorsamples = None
         self.Nlenses = 0
         self.lcdatafiles = []
         self.tdc2samplefiles = []
@@ -41,7 +45,7 @@ class SLCosmo(object):
         for k in range(self.Nlenses):
 
             # How many images does this lens have?
-            Nim = 4 # BUG: THIS SHOULD BE 4 WITH PROBABILITY 1/6, 2 WITH PROBABILITY 5/6
+            Nim = 2 # BUG: THIS SHOULD BE 4 WITH PROBABILITY 1/6, 2 WITH PROBABILITY 5/6
             Ndt = Nim - 1
 
             # What are its true time delays?
@@ -76,9 +80,9 @@ class SLCosmo(object):
         '''
         Each tdc2samplefile is a multi-column plain text file, with a header
         marked by '#' marks at the start of each line and then a set of Fermat
-        potential information that we need. The samples are stored in
-        dataframes once read in, one for each lens, and each one containing
-        one column for each time delay. Doubles will only have one time delay
+        potential information that we need. The samples are stored in a 2D
+        numpy array with one row for each lens, and one column for each time
+        delay. Doubles will only have one time delay
         ('AB'), while quads will have at least three ('AB', 'AC', 'AD').
         This method overwrites any existing array of lenses.
         '''
@@ -89,20 +93,64 @@ class SLCosmo(object):
             self.lenses[k].read_in_from(tdc2samplefile)
         return
 
-    def log_likelihood(self):
-        '''
-        Compute the joint log likelihood of the cosmological parameters given
-        a set of time delays and the measured Fermat potential differences.
-        This is a sum of log likelihoods over the ensemble of lenses, each of
-        which has to first be computed.
-        '''
-        return
-
-    def draw_samples_from_prior(self,Nsamples):
+    def draw_some_prior_samples(self,Nsamples):
         '''
         In simple Monte Carlo, we generate a large number of samples from the
         prior for the cosmological parameters, so that we can then evaluate
         their likelihood weights. The cosmological parameter samples are stored
-        in a dataframe, which this method initializes.
+        in a numpy array, which this method initializes.
         '''
+        self.Npriorsamples = Nsamples
+        self.cosmopars['H0'] = self.H0_prior_mean + self.H0_prior_width * np.random.randn(self.Npriorsamples)
         return
+
+    def compute_the_joint_log_likelihood(self):
+        '''
+        Compute the joint log likelihood of the cosmological parameters given
+        a set of time delays and the measured Fermat potential differences.
+        This is a sum of log likelihoods over the ensemble of lenses, each of
+        which has to first be computed. We also compute the importance weights,
+        rescaling and exponentiating.
+        '''
+        # Compute likelihoods, looping over lenses and summing over samples:
+        self.log_likelihoods = np.zeros(self.Npriorsamples)
+        # BUG: THIS FUNCTION NEEDS TO DO SOMETHING USEFUL, LIKE:
+        # # Loop over sampled values of H0
+        # for k in range(Npriorsamples):
+        #     H0 = self.cosmopars['H0'][k]
+        #     jointlogL = np.array([])
+        #     for lens in self.lenses:
+        #         logL = np.array([])
+        #         Ns = lens.Nsamples * lens.Ndelays
+        #         for j in range(lens.Nsamples):
+        #             for i in len(lens.Ndelays):
+        #                 np.append(logL, gaussian_function(XXXXX))
+        #         np.append(jointlogL, (np.logaddexp(logL) - np.log(Ns)))
+        #     self.log_likelihoods[k] = np.sum(jointlogL)
+
+        # Compute normalized importance weights:
+        logLmax = np.max(self.log_likelihoods)
+        self.weights = np.exp(self.log_likelihoods - logLmax)
+        # BUG: THESE SHOULD SUM TO ONE...
+        return
+
+    def report_the_inferred_cosmological_parameters(self):
+        '''
+        For this we need the posterior weight for each prior sample, so that we
+        can compute the posterior mean and standard deviation for each
+        cosmological parameter.
+        '''
+        H0mean = np.sum(self.weights * self.cosmopars['H0'])/np.sum(self.weights)
+        # BUG: NO STANDARD DEVIATION YET
+        print("Posterior mean H0 = ",H0mean)
+        return
+
+# =============================================================================
+
+if __name__ == '__main__':
+
+    Lets = desc.slcosmo.SLCosmo()
+    Lets.make_some_mock_data(10)
+    Lets.draw_some_prior_samples(100000)
+    Lets.compute_the_joint_log_likelihood()
+    Lets.report_the_inferred_cosmological_parameters()
