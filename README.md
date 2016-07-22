@@ -13,7 +13,7 @@ Hubble constant, H0.
 
 ## Demo
 
-* Coming soon...
+* [Round Trip Test](https://github.com/drphilmarshall/SLCosmo/blob/master/notebooks/RoundTrip.ipynb) - put in an H0, generate a mock TDC2 submission, see if we can recover H0. 
 
 ## People
 * [Phil Marshall](https://github.com/DarkEnergyScienceCollaboration/SLCosmo/issues/new?body=@drphilmarshall) (SLAC)
