@@ -73,6 +73,11 @@ class TDC2ensemble(object):
         for i in range(self.Nsamples):
             for j in range(self.Nim - 1):
                 Ns += 1
+
+                #error is to do with this:
+                #self.DeltaFP_obs[j]=(self.cosmotruth['H0'] / c) * (dt_true / Q)
+                print(self.DeltaFP_obs[j],(c * H0 * self.dt_obs[i,j])/self.Q)
+                #exit()
                 x = self.DeltaFP_obs[j] - (c * H0 * self.dt_obs[i,j])/self.Q
                 chisq = (x/self.DeltaFP_err[j])**2
                 #print H0,chisq
