@@ -16,6 +16,10 @@ class TDC2ensemble(object):
     This class is a data structure, for storing all the information
     provided in a TDC2 inferred time delay sample file.
 
+    It could be nice if we moved to using pandas dataframes, so that we
+    can refer to the time delays as eg dt['AB'], and the corresponding
+    FP differences as DeltaFP['AB'] +/- DeltaFP_err['AB'].
+
     Use cases:
 
     1. Get samples and header information from a file
@@ -55,6 +59,9 @@ class TDC2ensemble(object):
         5. Array has wrong number of columns (time delays - should be 1 or 3, and equal to Ndt)
         """
         self.source = tdc2samplefile
+        # input = open(tdc2samplefile, "w")
+        # input.read(self.header) - this needs work....
+        # input.close()
         self.dt_obs = np.loadtxt(self.source) #, skiprows=18)
         # BUG: THIS SHOULD BE A DATAFRAME, REALLY, WITH COLUMN HEADERS
         self.Nsamples = len(self.dt_obs)
@@ -74,9 +81,6 @@ class TDC2ensemble(object):
 
         Notes:
         ------
-        Currently the data is written out with no header - this is a
-        problem, issue #10.
-
         Possible failure modes:
         1. Samples array has no samples in it, even if Nsamples is not None
         2. File is not actually written
@@ -84,8 +88,10 @@ class TDC2ensemble(object):
         if self.Nsamples is None:
             print("No samples to write out, skipping.")
         else:
-            np.savetxt(tdc2samplefile, self.dt_obs)
-            # BUG: HEADER INFORMATION NEEDS TO BE WRITTEN OUT AS WELL
+            # First write out the header, over-writing the file:
+            self.form_header()
+            np.savetxt(tdc2samplefile, self.dt_obs,
+                       header=self.header, comments='# ')
         return
 
     def log_likelihood(self, H0, fast=True):
@@ -136,38 +142,27 @@ class TDC2ensemble(object):
 
         return scipy.misc.logsumexp(logL) - np.log(len(np.ravel(logL)))
 
-
-
-
-
-'''
-Here's what a typical header should look like:
-
-# Time Delay Challenge 2 Posterior Sample Time Delays
-#
-# Notes:
-# * Time delays should be given in days. Positive dt_AB means that light curve
-#     A leads (not lags) light curve B.
-# * Q is the H0-free time delay distance, a function of zd, zs and cosmology
-# * Q has units of km / s: D_dt = Q / H0
-# * Fermat potential differences DeltaFP are given in units of day km / s / Mpc,
-#     such that the predicted time delay is dt = (Q / (c * H0)) * DeltaFP
-#     in days. c = 3.00e5 km/s
-#
-# Q: 419170.8224
-# DeltaFP_AB: 2686.7945
-# DeltaFP_AB_err: 79.6675
-# DeltaFP_AC: 970.4846
-# DeltaFP_AC_err: 32.1524
-# DeltaFP_AD: 3657.5896
-# DeltaFP_AD_err: 101.5637
-#
-#    dt_AB    dt_AC    dt_AD
-
-A double would look the same, but would have no AC or AD lines, so the header
-would be 4 lines shorter.
-
-Nice if we moved to using pandas dataframes, so that we can refer to the
-time delays as eg dt['AB'], and the corresponding FP differences as
-DeltaFP['AB'] +/- DeltaFP_err['AB'].
-'''
+    def form_header(self):
+        self.header = \
+"Time Delay Challenge 2 Posterior Sample Time Delays\n\
+\n\
+Notes:\n\
+* Time delays should be given in days. Positive dt_AB means that light\n\
+  curve A leads (not lags) light curve B.\n\
+* Q is the H0-free time delay distance, a function of zd, zs and\n\
+  cosmology. Q has units of km / s: D_dt = Q / H0\n\
+* Fermat potential differences DeltaFP are given in units of\n\
+  day km / s / Mpc, such that the predicted time delay is\n\
+  dt = (Q / (c * H0)) * DeltaFP,  in days. c = 3.00e5 km/s\n\
+\n\
+Q: "+str(self.Q)+"\n"
+        names = ['AB', 'AC', 'AD']
+        for k in range(self.Nim - 1):
+            self.header = self.header + \
+"DeltaFP_"+names[k]+": "+str(self.DeltaFP_obs[k])+"\n" + \
+"DeltaFP_"+names[k]+"_err: "+str(self.DeltaFP_err[k])+"\n"
+        self.header = self.header + "\n"
+        for k in range(self.Nim - 1):
+            self.header = self.header + \
+                          "                 dt_"+names[k]
+        return
