@@ -57,7 +57,7 @@ class TDC2ensemble(object):
         potential header information in a plain text file.
 
         Possible failure modes:
-        1. Samples array has no samples in it, enev if Nsamples is not None
+        1. Samples array has no samples in it, even if Nsamples is not None
         2. File is not actually written
         """
         if self.Nsamples is None:

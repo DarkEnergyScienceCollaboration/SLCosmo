@@ -51,7 +51,8 @@ class SLCosmo(object):
         self.weights = None
         return
 
-    def make_some_mock_data(self, Nlenses=10, Nsamples=100):
+    def make_some_mock_data(self, Nlenses=10, Nsamples=100,
+                            percentage_dfp_err=4.0, dt_sigma=2.0):
         '''
         Make a mock dataset of Nlenses lens systems, and write it out as
         in a set of correctly formatted files. True time delays and
@@ -63,15 +64,19 @@ class SLCosmo(object):
         '''
         assert Nlenses > 0
         assert Nsamples > 1
+        assert percentage_dfp_err > 0.0
+        assert dt_sigma > 0.0
         self.Nlenses = Nlenses
         self.lenses = []
         self.cosmotruth['H0'] = 72.3
         for k in range(self.Nlenses):
 
             # How many images does this lens have?
-            Nim = 2
-            # BUG: THIS SHOULD BE 4 WITH PROBABILITY 1/6,
-            #                     2 WITH PROBABILITY 5/6
+            quad_fraction = 0.17
+            if np.random.rand() < quad_fraction:
+                Nim = 4
+            else:
+                Nim = 2
             Ndt = Nim - 1
 
             # What are its true time delays?
@@ -82,18 +87,16 @@ class SLCosmo(object):
             DeltaFP_true = (c * dt_true * self.cosmotruth['H0'] / Q)
 
             # What are its observed Fermat potential differences?
-            percentage_dfp_err = 4.0
             DeltaFP_err = DeltaFP_true * percentage_dfp_err / 100.0
-            # BUG: percentage_dfp_err=4.0 SHOULD BE A KWARG
             DeltaFP_obs = DeltaFP_true + \
                           DeltaFP_err * np.random.rand(Ndt)
 
             # What are its posterior sample time delays?
-            dt_sigma = 2.0 * np.ones(Ndt)
-            # BUG: dt_sigma=2.0 DAYS SHOULD BE A KWARG
+            dt_sigma = dt_sigma * np.ones(Ndt)
             dt_obs = dt_true + dt_sigma * np.random.randn(Nsamples, Ndt)
 
-            # Create a TDC2 ensemble object and have it write itself out:
+            # Create a TDC2 ensemble object and have it write
+            # itself out:
             filename = 'mock_time_delays_'+str(k)+'.txt'
             self.lenses.append(desc.slcosmo.TDC2ensemble())
             self.lenses[k].Nsamples = Nsamples
