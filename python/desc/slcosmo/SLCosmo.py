@@ -41,7 +41,7 @@ class SLCosmo(object):
         self.tdc2samplefiles = []
         return
 
-    def make_some_mock_data(self,Nlenses):
+    def make_some_mock_data(self,Nlenses=10,Nsamples=1000):
         '''
         Make a mock dataset of Nlenses lens systems, and write it out as
         in a set of correctly formatted files. True time delays and Fermat
@@ -72,14 +72,14 @@ class SLCosmo(object):
 
             # What are its posterior sample time delays?
             dt_sigma = 2.0 * np.ones(Ndt) # BUG: dt_sigma=2.0 DAYS SHOULD BE A KWARG
-            Nsamples = 1000  # BUG: Nsamples=1000 SHOULD BE A KWARG
             dt_obs = dt_true + dt_sigma * np.random.randn(Nsamples, Ndt)
 
             # Create a TDC2 ensemble object and have it write itself out:
             filename = 'mock_time_delays_'+str(k)+'.txt'
             self.lenses.append(desc.slcosmo.TDC2ensemble())
             self.lenses[k].Nsamples = Nsamples
-            self.lenses[k].samples = dt_obs
+            self.lenses[k].Nim = Nim
+            self.lenses[k].dt_obs = dt_obs
             self.lenses[k].DeltaFP_obs = DeltaFP_obs
             self.lenses[k].DeltaFP_err = DeltaFP_err
             self.lenses[k].Q = Q
@@ -105,14 +105,14 @@ class SLCosmo(object):
             self.lenses[k].read_in_from(tdc2samplefile)
         return
 
-    def draw_some_prior_samples(self,Nsamples):
+    def draw_some_prior_samples(self,Npriorsamples):
         '''
         In simple Monte Carlo, we generate a large number of samples from the
         prior for the cosmological parameters, so that we can then evaluate
         their likelihood weights. The cosmological parameter samples are stored
         in a numpy array, which this method initializes.
         '''
-        self.Npriorsamples = Nsamples
+        self.Npriorsamples = Npriorsamples
         self.cosmopars['H0'] = self.H0_prior_mean + self.H0_prior_width * np.random.randn(self.Npriorsamples)
         return
 
@@ -126,24 +126,17 @@ class SLCosmo(object):
         '''
         # Compute likelihoods, looping over lenses and summing over samples:
         self.log_likelihoods = np.zeros(self.Npriorsamples)
-        # BUG: THIS FUNCTION NEEDS TO DO SOMETHING USEFUL, LIKE:
-        # # Loop over sampled values of H0
-        # for k in range(Npriorsamples):
-        #     H0 = self.cosmopars['H0'][k]
-        #     jointlogL = np.array([])
-        #     for lens in self.lenses:
-        #         logL = np.array([])
-        #         Ns = lens.Nsamples * lens.Ndelays
-        #         for j in range(lens.Nsamples):
-        #             for i in len(lens.Ndelays):
-        #                 np.append(logL, log_gaussian_function(XXXXX))
-        #         np.append(jointlogL, (np.logaddexp(logL) - np.log(Ns)))
-        #     self.log_likelihoods[k] = np.sum(jointlogL)
+        # Loop over sampled values of H0
+        for k in range(self.Npriorsamples):
+            H0 = self.cosmopars['H0'][k]
+            jointlogL = np.array([])
+            for lens in self.lenses:
+                jointlogL = np.append(jointlogL, lens.log_likelihood(H0))
+            self.log_likelihoods[k] = np.sum(jointlogL)
 
         # Compute normalized importance weights:
         logLmax = np.max(self.log_likelihoods)
         self.weights = np.exp(self.log_likelihoods - logLmax)
-        # BUG: THESE SHOULD SUM TO ONE...
         return
 
     def report_the_inferred_cosmological_parameters(self):
@@ -155,6 +148,11 @@ class SLCosmo(object):
         H0mean = np.sum(self.weights * self.cosmopars['H0']) / np.sum(self.weights)
         # BUG: NO STANDARD DEVIATION YET
         print("Posterior mean H0 = ",H0mean)
+        return
+
+    def plot_the_inferred_cosmological_parameters(self):
+        import pylab as plt
+        plt.hist(self.cosmopars['H0'],weights=self.weights)
         return
 
 # =============================================================================

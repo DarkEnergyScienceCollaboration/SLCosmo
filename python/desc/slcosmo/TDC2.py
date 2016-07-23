@@ -1,4 +1,6 @@
 import numpy as np
+import scipy.misc
+c = 3e5 #km/s
 
 class TDC2ensemble(object):
     """
@@ -65,6 +67,24 @@ class TDC2ensemble(object):
             # BUG: HEADER INFORMATION NEEDS TO BE WRITTEN OUT AS WELL
         return
 
+    def log_likelihood(self,H0):
+        logL = np.array([])
+        Ns = 0
+        for i in range(self.Nsamples):
+            for j in range(self.Nim - 1):
+                Ns += 1
+
+                #error is to do with this:
+                #self.DeltaFP_obs[j]=(self.cosmotruth['H0'] / c) * (dt_true / Q)
+                print(self.DeltaFP_obs[j],(c * H0 * self.dt_obs[i,j])/self.Q)
+                #exit()
+                x = self.DeltaFP_obs[j] - (c * H0 * self.dt_obs[i,j])/self.Q
+                chisq = (x/self.DeltaFP_err[j])**2
+                #print H0,chisq
+                logL_el = -0.5 * chisq - np.log( ( (2*np.pi)**0.5) *self.DeltaFP_err[j])
+                logL = np.append(logL,logL_el)
+
+        return scipy.misc.logsumexp(logL) - np.log(Ns)
 
 '''
 Here's what a typical header should look like:
@@ -95,5 +115,5 @@ would be 4 lines shorter.
 
 Nice if we moved to using pandas dataframes, so that we can refer to the
 time delays as eg dt['AB'], and the corresponding FP differences as
-DeltaFP['AB'] +/- DeltaFP_err['AB']. 
+DeltaFP['AB'] +/- DeltaFP_err['AB'].
 '''
