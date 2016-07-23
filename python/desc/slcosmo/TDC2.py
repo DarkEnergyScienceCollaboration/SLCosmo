@@ -56,6 +56,16 @@ class TDC2ensemble(object):
         Write out both the posterior sample time delays and the Fermat
         potential header information in a plain text file.
 
+        Parameters:
+        -----------
+        tdc2samplefile : string
+                       The name of the file to be written to.
+
+        Notes:
+        ------
+        Currently the data is written out with no header - this is a
+        problem, issue #10.
+
         Possible failure modes:
         1. Samples array has no samples in it, even if Nsamples is not None
         2. File is not actually written
@@ -67,24 +77,53 @@ class TDC2ensemble(object):
             # BUG: HEADER INFORMATION NEEDS TO BE WRITTEN OUT AS WELL
         return
 
-    def log_likelihood(self, H0):
-        logL = np.array([])
-        Ns = 0
-        for i in range(self.Nsamples):
-            for j in range(self.Nim - 1):
-                Ns += 1
+    def log_likelihood(self, H0, fast=True):
+        """
+        Compute the likelihood of the proposed Hubble constant H0 given
+        the Fermat potential difference data, marginalizing over the
+        time delay PDF provided (approximately) in the samples.
 
-                x = self.DeltaFP_obs[j] - \
-                    (c * self.dt_obs[i,j] * H0 / self.Q)
+        Parameters:
+        -----------
+        H0 : float
+             The Hubble constant under evaluation.
+        fast : Boolean, optional
+             Just in case you want to do the calculation
+             without vectorisation.
 
-                chisq = (x/self.DeltaFP_err[j])**2.0
+        Returns:
+        --------
+        logL : float
+              The value of the log likelihood.
 
-                logL_el = -0.5 * chisq \
-                    - np.log(np.sqrt(2*np.pi) * self.DeltaFP_err[j])
+        See Also:
+        ---------
+        SLCosmo.compute_the_joint_log_likelihood
 
-                logL = np.append(logL,logL_el)
+        Notes:
+        ------
+        Don't choose `fast=False`.
+        """
+        if fast:
+            x = self.DeltaFP_obs - (c * self.dt_obs * H0 / self.Q)
+            chisq = (x/self.DeltaFP_err)**2.0
+            logL = -0.5 * chisq \
+                   - np.log(np.sqrt(2*np.pi) * self.DeltaFP_err)
 
-        return scipy.misc.logsumexp(logL) - np.log(Ns)
+        else:
+            logL = np.array([])
+            Ns = 0
+            for i in range(self.Nsamples):
+                for j in range(self.Nim - 1):
+                    Ns += 1
+                    x = self.DeltaFP_obs[j] - \
+                        (c * self.dt_obs[i,j] * H0 / self.Q)
+                    chisq = (x/self.DeltaFP_err[j])**2.0
+                    logL_el = -0.5 * chisq \
+                        - np.log(np.sqrt(2*np.pi) * self.DeltaFP_err[j])
+                    logL = np.append(logL,logL_el)
+
+        return scipy.misc.logsumexp(logL) - np.log(len(np.ravel(logL)))
 
 
 

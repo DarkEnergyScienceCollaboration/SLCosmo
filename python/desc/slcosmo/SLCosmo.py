@@ -160,7 +160,8 @@ class SLCosmo(object):
             H0 = self.cosmopars['H0'][k]
             jointlogL = np.array([])
             for lens in self.lenses:
-                jointlogL = np.append(jointlogL, lens.log_likelihood(H0))
+                jointlogL = np.append(jointlogL,
+                                      lens.log_likelihood(H0))
             self.log_likelihoods[k] = np.sum(jointlogL)
 
         # Compute normalized importance weights:
