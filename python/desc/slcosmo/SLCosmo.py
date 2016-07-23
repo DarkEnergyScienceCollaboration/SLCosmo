@@ -77,7 +77,7 @@ class SLCosmo(object):
             # What is its Q value, relating H0 to time delay distance?
             Q = 4e5 + 0.5e5 * np.random.randn()
             # What are its true Fermat potential differences?
-            DeltaFP_true = (self.cosmotruth['H0'] / c) * (dt_true / Q)
+            DeltaFP_true = (c * dt_true * self.cosmotruth['H0'] / Q)
 
             # What are its observed Fermat potential differences?
             percentage_dfp_err = 4.0

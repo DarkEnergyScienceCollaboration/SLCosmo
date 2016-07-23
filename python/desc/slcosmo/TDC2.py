@@ -7,14 +7,14 @@ class TDC2ensemble(object):
     In TDC2, we expect time delays to be inferred by the Good Teams and
     submitted as ensembles of posterior samples, in plain text tables,
     one time delay per column (AB, AC, AD) for quads, and just (AB) for
-    doubles. The headers of these files will contain the same Fermat potential
-    information that was provided in the data file, ie an 'observed' FP
-    difference and its uncertainty for each image pair, plus an overall 'Q'
-    factor that enables the conversion between time delay, FP, and time
-    delay distance.
+    doubles. The headers of these files will contain the same Fermat
+    potential information that was provided in the data file, ie an
+    'observed' FP difference and its uncertainty for each image pair,
+    plus an overall 'Q' factor that enables the conversion between time
+    delay, FP, and time delay distance.
 
-    This class is a data structure, for storing all the information provided
-    in a TDC2 inferred time delay sample file.
+    This class is a data structure, for storing all the information
+    provided in a TDC2 inferred time delay sample file.
 
     Use cases:
 
@@ -80,7 +80,7 @@ class TDC2ensemble(object):
                 # print(self.DeltaFP_obs[j], (c * H0 * self.dt_obs[i,j])/self.Q)
 
                 x = self.DeltaFP_obs[j] - \
-                    (H0 / c) * (self.dt_obs[i,j] / self.Q)
+                    (c * self.dt_obs[i,j] * H0 / self.Q)
 
                 chisq = (x/self.DeltaFP_err[j])**2.0
 
