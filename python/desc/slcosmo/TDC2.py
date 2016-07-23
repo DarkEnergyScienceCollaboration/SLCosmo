@@ -31,7 +31,7 @@ class TDC2ensemble(object):
         self.samples = []
         return
 
-    def read_in_from(self,tdc2samplefile):
+    def read_in_from(self, tdc2samplefile):
         """
         Read in both the posterior sample time delays and the Fermat potential
         header information, and store it for re-use.
@@ -44,17 +44,17 @@ class TDC2ensemble(object):
         5. Array has wrong number of columns (time delays - should be 1 or 3, and equal to Ndt)
         """
         self.source = tdc2samplefile
-        self.samples = np.loadtxt(self.source,skiprows=18)
+        self.samples = np.loadtxt(self.source, skiprows=18)
         # BUG: THIS SHOULD BE A DATAFRAME, REALLY, WITH COLUMN HEADERS
         self.Nsamples = len(self.samples)
         # BUG: HEADER INFORMATION NEEDS TO BE READ IN AS WELL
         # BUG: NEED TO STORE NO OF DELAYS AS WELL AS NO OF SAMPLES
         return
 
-    def write_out_to(self,tdc2samplefile):
+    def write_out_to(self, tdc2samplefile):
         """
-        Write out both the posterior sample time delays and the Fermat potential
-        header information in a plain text file.
+        Write out both the posterior sample time delays and the Fermat
+        potential header information in a plain text file.
 
         Possible failure modes:
         1. Samples array has no samples in it, enev if Nsamples is not None
@@ -63,28 +63,37 @@ class TDC2ensemble(object):
         if self.Nsamples is None:
             print("No samples to write out, skipping.")
         else:
-            np.savetxt(tdc2samplefile,self.samples)
+            np.savetxt(tdc2samplefile, self.samples)
             # BUG: HEADER INFORMATION NEEDS TO BE WRITTEN OUT AS WELL
         return
 
-    def log_likelihood(self,H0):
+    def log_likelihood(self, H0):
         logL = np.array([])
         Ns = 0
         for i in range(self.Nsamples):
             for j in range(self.Nim - 1):
                 Ns += 1
 
-                #error is to do with this:
-                #self.DeltaFP_obs[j]=(self.cosmotruth['H0'] / c) * (dt_true / Q)
-                print(self.DeltaFP_obs[j],(c * H0 * self.dt_obs[i,j])/self.Q)
-                #exit()
-                x = self.DeltaFP_obs[j] - (c * H0 * self.dt_obs[i,j])/self.Q
-                chisq = (x/self.DeltaFP_err[j])**2
-                #print H0,chisq
-                logL_el = -0.5 * chisq - np.log( ( (2*np.pi)**0.5) *self.DeltaFP_err[j])
+# error is to do with this:
+# self.DeltaFP_obs[j] = (self.cosmotruth['H0'] / c) * (dt_true / Q)
+
+                # print(self.DeltaFP_obs[j], (c * H0 * self.dt_obs[i,j])/self.Q)
+
+                x = self.DeltaFP_obs[j] - \
+                    (H0 / c) * (self.dt_obs[i,j] / self.Q)
+
+                chisq = (x/self.DeltaFP_err[j])**2.0
+
+                logL_el = -0.5 * chisq \
+                    - np.log(np.sqrt(2*np.pi) * self.DeltaFP_err[j])
+
                 logL = np.append(logL,logL_el)
 
         return scipy.misc.logsumexp(logL) - np.log(Ns)
+
+
+
+
 
 '''
 Here's what a typical header should look like:
