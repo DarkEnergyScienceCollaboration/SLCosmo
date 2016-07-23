@@ -33,8 +33,19 @@ class TDC2ensemble(object):
 
     def read_in_from(self, tdc2samplefile):
         """
-        Read in both the posterior sample time delays and the Fermat potential
-        header information, and store it for re-use.
+        Read in both the posterior sample time delays and the Fermat potential header information, and store it for re-use.
+
+        Parameters:
+        -----------
+        tdc2samplefile : string
+                       Name of the file to read from.
+
+        Notes:
+        ------
+        The samples are stored in a 2D numpy array with one row for each
+        lens, and one column for each time delay. Doubles will only have
+        one time delay ('AB'), while quads will have at least three
+        ('AB', 'AC', 'AD').
 
         Possible failure modes:
         1. File does not exist

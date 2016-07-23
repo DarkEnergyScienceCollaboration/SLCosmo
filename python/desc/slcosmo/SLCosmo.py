@@ -51,13 +51,30 @@ class SLCosmo(object):
         self.weights = None
         return
 
-    def make_some_mock_data(self, Nlenses=10, Nsamples=100,
+    def make_some_mock_data(self, Nlenses=100, Nsamples=1000,
                             percentage_dfp_err=4.0, dt_sigma=2.0):
         '''
-        Make a mock dataset of Nlenses lens systems, and write it out as
-        in a set of correctly formatted files. True time delays and
-        Fermat potentials are drawn randomly from plausible
-        distributions.
+        Make a mock dataset of any number of lens systems, and write it
+        out in a set of correctly formatted files.
+
+        Parameters:
+        -----------
+        Nlenses : integer
+                The number of lenses worth of time delay data to
+                simulate.
+        Nsamples : integer
+                The number of posterior sample time delays to generate.
+        percentage_dfp_err : float
+                The percentage uncertainty in each and every Fermat
+                potential difference, which are assumed to be independent. A very simple approximation.
+        dt_sigma : float
+                The absolute uncertainty in each and every time delay,
+                in days. Another simple approximation.
+
+        Notes:
+        ------
+        True time delays and Fermat potentials are drawn randomly from
+        plausible Gaussian distributions.
 
         Possible failure modes: 1. Simulated posterior time delays have
         incorrect width
@@ -112,14 +129,20 @@ class SLCosmo(object):
 
     def read_in_time_delay_samples(self, tdc2samplefiles):
         '''
+        Ingest time delay data from a number of TDC2 submission files,
+        storing it in a list of `TDC2ensemble` objects, one for each
+        lens (and overwriting any existing list).
+
+        Parameters:
+        -----------
+        tdc2samplefiles : list of strings
+                        The names of the files to be read from.
+
+        Notes:
+        ------
         Each tdc2samplefile is a multi-column plain text file, with a
         header marked by '#' marks at the start of each line and
         containing a set of Fermat potential information that we need.
-        The samples are stored in a 2D numpy array with one row for each
-        lens, and one column for each time delay. Doubles will only have
-        one time delay ('AB'), while quads will have at least three
-        ('AB', 'AC', 'AD'). This method overwrites any existing array of
-        lenses.
         '''
         self.Nlenses = len(tdc2samplefiles)
         self.lenses = [] # trashing any existing data we may have had.
@@ -132,9 +155,17 @@ class SLCosmo(object):
         '''
         In simple Monte Carlo, we generate a large number of samples
         from the prior for the cosmological parameters, so that we can
-        then evaluate their likelihood weights. The cosmological
-        parameter samples are stored in a numpy array, which this method
-        initializes.
+        then evaluate their likelihood weights.
+
+        Parameters:
+        -----------
+        Npriorsamples : integer
+                      The number of prior samples to draw.
+
+        Notes:
+        ------
+        The cosmological parameter samples are stored in a numpy array,
+        which this method initializes.
         '''
         assert Npriorsamples > 20
         self.Npriorsamples = Npriorsamples
@@ -146,7 +177,11 @@ class SLCosmo(object):
         '''
         Compute the joint log likelihood of the cosmological parameters
         given a set of time delays and the measured Fermat potential
-        differences. This is a sum of log likelihoods over the ensemble
+        differences.
+
+        Notes:
+        ------
+        The calculation is a sum of log likelihoods over the ensemble
         of lenses, each of which has to first be computed. We also
         compute the importance weights, rescaling and exponentiating.
         '''
@@ -180,6 +215,10 @@ class SLCosmo(object):
         For this we need the posterior weight for each prior sample, so
         that we can compute the posterior mean and standard deviation
         for each cosmological parameter.
+
+        Notes:
+        ------
+        Should probably be a static function.
         '''
         H0_sum = np.sum(self.weights * self.cosmopars['H0'])
         H0_sumsq = np.sum(self.weights * self.cosmopars['H0']**2)
@@ -193,6 +232,15 @@ class SLCosmo(object):
         For this we need the posterior weight for each prior sample, so
         that we can compute the posterior mean and standard deviation
         for each cosmological parameter.
+
+        Returns:
+        --------
+        (H0, sigma) : Tuple of floats
+                    An estimate of H0, and its uncertainty.
+
+        Notes:
+        ------
+        Convenience function.
         '''
         estimate, uncertainty = self.estimate_H0()
         kmsMpc = "km/s/Mpc"
@@ -203,6 +251,11 @@ class SLCosmo(object):
         return
 
     def plot_the_inferred_cosmological_parameters(self):
+        '''
+        Make a nice plot of the histogram of posterior H0 samples,
+        overlaying the assumed prior PDF and the underlying true value,
+        if known.
+        '''
         import pylab as plt
         # Start figure:
         fig = plt.figure(figsize=(8,5))
