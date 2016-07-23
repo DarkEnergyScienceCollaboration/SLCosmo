@@ -28,7 +28,7 @@ class TDC2ensemble(object):
     def __init__(self):
         self.source = None
         self.Nsamples = None
-        self.samples = []
+        self.dt_obs = []
         return
 
     def read_in_from(self, tdc2samplefile):
@@ -44,9 +44,9 @@ class TDC2ensemble(object):
         5. Array has wrong number of columns (time delays - should be 1 or 3, and equal to Ndt)
         """
         self.source = tdc2samplefile
-        self.samples = np.loadtxt(self.source, skiprows=18)
+        self.dt_obs = np.loadtxt(self.source) #, skiprows=18)
         # BUG: THIS SHOULD BE A DATAFRAME, REALLY, WITH COLUMN HEADERS
-        self.Nsamples = len(self.samples)
+        self.Nsamples = len(self.dt_obs)
         # BUG: HEADER INFORMATION NEEDS TO BE READ IN AS WELL
         # BUG: NEED TO STORE NO OF DELAYS AS WELL AS NO OF SAMPLES
         return
@@ -63,7 +63,7 @@ class TDC2ensemble(object):
         if self.Nsamples is None:
             print("No samples to write out, skipping.")
         else:
-            np.savetxt(tdc2samplefile, self.samples)
+            np.savetxt(tdc2samplefile, self.dt_obs)
             # BUG: HEADER INFORMATION NEEDS TO BE WRITTEN OUT AS WELL
         return
 
@@ -73,11 +73,6 @@ class TDC2ensemble(object):
         for i in range(self.Nsamples):
             for j in range(self.Nim - 1):
                 Ns += 1
-
-# error is to do with this:
-# self.DeltaFP_obs[j] = (self.cosmotruth['H0'] / c) * (dt_true / Q)
-
-                # print(self.DeltaFP_obs[j], (c * H0 * self.dt_obs[i,j])/self.Q)
 
                 x = self.DeltaFP_obs[j] - \
                     (c * self.dt_obs[i,j] * H0 / self.Q)

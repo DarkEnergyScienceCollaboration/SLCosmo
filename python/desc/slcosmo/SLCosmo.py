@@ -61,6 +61,8 @@ class SLCosmo(object):
         Possible failure modes: 1. Simulated posterior time delays have
         incorrect width
         '''
+        assert Nlenses > 0
+        assert Nsamples > 1
         self.Nlenses = Nlenses
         self.lenses = []
         self.cosmotruth['H0'] = 72.3
@@ -131,6 +133,7 @@ class SLCosmo(object):
         parameter samples are stored in a numpy array, which this method
         initializes.
         '''
+        assert Npriorsamples > 20
         self.Npriorsamples = Npriorsamples
         self.cosmopars['H0'] = self.H0_prior_mean + \
             self.H0_prior_width * np.random.randn(self.Npriorsamples)
@@ -267,3 +270,4 @@ if __name__ == '__main__':
     Lets.draw_some_prior_samples()
     Lets.compute_the_joint_log_likelihood()
     Lets.report_the_inferred_cosmological_parameters()
+    Lets.plot_the_inferred_cosmological_parameters()
