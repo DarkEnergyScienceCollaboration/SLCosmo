@@ -168,7 +168,7 @@ class SLCosmo(object):
 
         return
 
-    def report_the_inferred_cosmological_parameters(self):
+    def estimate_H0(self):
         '''
         For this we need the posterior weight for each prior sample, so
         that we can compute the posterior mean and standard deviation
@@ -179,10 +179,20 @@ class SLCosmo(object):
         H0_N = np.sum(self.weights)
         H0_mean = H0_sum / H0_N
         H0_stdv = np.sqrt((H0_sumsq - H0_N*H0_mean**2)/H0_N)
+        return H0_mean, H0_stdv
+
+    def report_the_inferred_cosmological_parameters(self):
+        '''
+        For this we need the posterior weight for each prior sample, so
+        that we can compute the posterior mean and standard deviation
+        for each cosmological parameter.
+        '''
+        estimate, uncertainty = self.estimate_H0()
         kmsMpc = "km/s/Mpc"
-        print("H0 =",round(H0_mean,1),"+/-",round(H0_stdv,1),kmsMpc)
+        print("H0 =", round(estimate,1), "+/-",
+                      round(uncertainty,1), kmsMpc)
         if self.cosmotruth['H0'] is not None:
-            print("True H0 =",self.cosmotruth['H0'],kmsMpc)
+            print("True H0 =", self.cosmotruth['H0'], kmsMpc)
         return
 
     def plot_the_inferred_cosmological_parameters(self):
@@ -198,23 +208,50 @@ class SLCosmo(object):
         plt.rcParams.update(params)
         # Linear xes for histogram:
         hax = fig.add_axes([0.15,0.15,0.85,0.80])
-        H0min, H0max = 50.0, 90.0
-        hax.set_xlim(50.0,90.0)
+        H0min, H0max = 60.0, 80.0
+        hax.set_xlim(H0min, H0max)
         for label in hax.get_yticklabels():
             label.set_visible(False)
         for tick in hax.yaxis.get_ticklines():
             tick.set_visible(False)
+
+        # Plot the posterior histogram:
         Nbins = 0.1*self.Npriorsamples
         bins = np.linspace(H0min, H0max, Nbins, endpoint=True)
-        # Make the plot and overlay the true value of H0:
         plt.hist(self.cosmopars['H0'], weights=self.weights,
-                 bins=bins, histtype='stepfilled',
-                 color='red', alpha=0.5)
-        plt.axvline(x=self.cosmotruth['H0'],
-                    color='gray', linestyle='dashed')
+                 bins=bins, histtype='stepfilled', normed=True,
+                 color='red', edgecolor='red', alpha=0.5,
+                 label='Posterior PDF')
+
+        # Overlay Gaussian approximation to the posterior:
+        mu, sigma = self.estimate_H0()
+        value = str(round(mu,1))+' +/- '+str(round(sigma,1))
+        x = np.linspace(H0min, H0max, 1000, endpoint=True)
+        y = np.exp(-0.5*((x-mu)**2)/sigma**2) / \
+              np.sqrt(2*np.pi*sigma**2)
+        plt.plot(x, y, linewidth=2, color='red',
+                 label='Posterior estimate: '+value)
+
+        # Overlay Gaussian prior:
+        mu, sigma = self.H0_prior_mean, self.H0_prior_width
+        assumption = str(round(mu,1))+' +/- '+str(round(sigma,1))
+        x = np.linspace(H0min, H0max, 1000, endpoint=True)
+        y = np.exp(-0.5*((x-mu)**2)/sigma**2) / \
+              np.sqrt(2*np.pi*sigma**2)
+        plt.plot(x, y, linestyle='dotted', linewidth=2, color='gray',
+                 label='Prior PDF: '+assumption)
+
+        # Overlay true value:
+        value = self.cosmotruth['H0']
+        plt.axvline(x=value,
+                    color='black', linestyle='dashed', linewidth=2,
+                    label='Truth: '+str(value))
+
         # Label axes of course:
         plt.xlabel("$H_0 / {\\rm km s}^{-1}{\\rm Mpc}^{-1}$")
         plt.ylabel("${\\rm Pr}(H_0 \\vert \Delta t_{\\rm obs} )$")
+        plt.legend(prop={'size':10}, framealpha=1.0, loc=0)
+
         # Write out to file and report:
         filename = "H0posterior.pdf"
         plt.savefig(filename, dpi=300)
