@@ -66,3 +66,6 @@ target/
 
 # Factory data
 mock*
+
+# Products
+*.pdf
