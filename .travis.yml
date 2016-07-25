@@ -1,6 +1,7 @@
 language: python
 
 install:
+  - pip install -r requirements.txt
   - pip install coveralls
   - source setup/setup.sh
   
