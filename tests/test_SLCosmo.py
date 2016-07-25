@@ -21,9 +21,8 @@ class SLCosmoUnitTestCase(unittest.TestCase):
         Lets = desc.slcosmo.SLCosmo()
         Lets.make_some_mock_data(1)
         Lets.read_in_time_delay_samples(['mock_time_delays_0.txt'])
-        self.assertEquals(Lets.Nlenses, 1)
-        # BUG: THIS TEST IS PRETTY MEANINGLESS
-
+        self.assertEqual(len(Lets.lenses), 1)
+        self.assertEqual(Lets.Nlenses, 1)
 
 if __name__ == '__main__':
     unittest.main()

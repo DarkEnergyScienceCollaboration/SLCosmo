@@ -146,9 +146,8 @@ class SLCosmo(object):
         '''
         self.Nlenses = len(tdc2samplefiles)
         self.lenses = [] # trashing any existing data we may have had.
-        for k, tdc2samplefile in enumerate(tdc2samplefiles):
-            self.lenses.append(desc.slcosmo.TDC2ensemble())
-            self.lenses[k].read_in_from(tdc2samplefile)
+        for tdc2samplefile in tdc2samplefiles:
+            self.lenses.append(desc.slcosmo.TDC2ensemble.read_in_from(tdc2samplefile))
         return
 
     def draw_some_prior_samples(self, Npriorsamples=1000):
@@ -195,6 +194,7 @@ class SLCosmo(object):
             H0 = self.cosmopars['H0'][k]
             jointlogL = np.array([])
             for lens in self.lenses:
+                print("computing log-likelihood for lens", lens)
                 jointlogL = np.append(jointlogL,
                                       lens.log_likelihood(H0))
             self.log_likelihoods[k] = np.sum(jointlogL)

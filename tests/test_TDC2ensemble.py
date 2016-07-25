@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import unittest
 import desc.slcosmo
 
@@ -19,38 +20,51 @@ class TDC2ensembleTestCase(unittest.TestCase):
         # Tests for 2-image data.
         two_image = desc.slcosmo.TDC2ensemble.read_in_from(self.two_image_file)
         self.assertEqual(two_image.source, self.two_image_file)
-        self.assertEqual(two_image.Nimages, 2)
+        self.assertEqual(two_image.Nim, 2)
 
         # Check for known sample size
-        self.assertEqual(two_image.Nsamples, 1000)
+        self.assertEqual(two_image.Nsamples, 20)
 
         # Check for expected attributes for 2-image data.
-        # @todo: Think about refactoring how DeltaFP* are handled.
-        self.assertNotEqual(two_image.DeltaFP, None)
-        self.assertNotEqual(two_image.DeltaFP_err, None)
+        self.assertEqual(len(two_image.DeltaFP_obs), 1)
+        self.assertEqual(len(two_image.DeltaFP_err), 1)
 
-        # Check that attributes for 4-image data are note present.
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_AB, two_image)
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_AB_err, two_image)
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_AC, two_image)
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_AC_err, two_image)
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_AD, two_image)
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_AD_err, two_image)
+        self.assertAlmostEqual(two_image.DeltaFP_obs[0], 885.602408386)
+        self.assertAlmostEqual(two_image.DeltaFP_err[0], 34.0959154248)
 
         # Tests for 4-image data.
         four_image = desc.slcosmo.TDC2ensemble.read_in_from(self.four_image_file)
         self.assertEqual(four_image.source, self.four_image_file)
-        self.assertEqual(four_image.Nsamples, 1000)
-        self.assertEqual(four_image.Nimages, 4)
+        self.assertEqual(four_image.Nsamples, 20)
+        self.assertEqual(four_image.Nim, 4)
+        self.assertEqual(len(four_image.DeltaFP_obs), 3)
+        self.assertEqual(len(four_image.DeltaFP_err), 3)
 
-        # Test for expected attributes.
-        self.assertNotEqual(four_image.DeltaFP_AB, None)
-        self.assertNotEqual(four_image.DeltaFP_AB_err, None)
-        self.assertNotEqual(four_image.DeltaFP_AC, None)
-        self.assertNotEqual(four_image.DeltaFP_AC_err, None)
-        self.assertNotEqual(four_image.DeltaFP_AD, None)
-        self.assertNotEqual(four_image.DeltaFP_AD_err, None)
+        self.assertAlmostEqual(four_image.DeltaFP_obs[0], 1008.19147194)
+        self.assertAlmostEqual(four_image.DeltaFP_err[0], 39.7134169074)
+        self.assertAlmostEqual(four_image.DeltaFP_obs[1], 1150.72879342)
+        self.assertAlmostEqual(four_image.DeltaFP_err[1], 45.348122074)
+        self.assertAlmostEqual(four_image.DeltaFP_obs[2], 1088.08600626)
+        self.assertAlmostEqual(four_image.DeltaFP_err[2], 42.0078296141)
 
-        # Test that two-image attributes are not present.
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP, four_image)
-        self.assertRaises(AttributeError, lambda x: x.DeltaFP_err, four_image)
+    def test_read_write(self):
+        two_image_temp_file = 'two_image_temp.txt'
+        two_image = desc.slcosmo.TDC2ensemble.read_in_from(self.two_image_file)
+        two_image.write_out_to(two_image_temp_file)
+        temp_image = desc.slcosmo.TDC2ensemble.read_in_from(two_image_temp_file)
+        self.assertEqual(two_image.DeltaFP_obs[0], temp_image.DeltaFP_obs[0])
+        self.assertEqual(two_image.DeltaFP_err[0], temp_image.DeltaFP_err[0])
+        self.assertTrue(np.allclose(two_image.dt_obs, temp_image.dt_obs))
+        os.remove(two_image_temp_file)
+
+        four_image_temp_file = 'four_image_temp.txt'
+        four_image = desc.slcosmo.TDC2ensemble.read_in_from(self.four_image_file)
+        four_image.write_out_to(four_image_temp_file)
+        temp_image = desc.slcosmo.TDC2ensemble.read_in_from(four_image_temp_file)
+        self.assertEqual(four_image.DeltaFP_obs[0], temp_image.DeltaFP_obs[0])
+        self.assertEqual(four_image.DeltaFP_err[0], temp_image.DeltaFP_err[0])
+        self.assertTrue(np.allclose(four_image.dt_obs, temp_image.dt_obs))
+        os.remove(four_image_temp_file)
+
+if __name__ == '__main__':
+    unittest.main()
