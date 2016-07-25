@@ -1,5 +1,6 @@
 # SLCosmo
 [![Build Status](https://travis-ci.org/DarkEnergyScienceCollaboration/SLCosmo.svg?branch=master)](https://travis-ci.org/DarkEnergyScienceCollaboration/SLCosmo)
+[![Coverage Status](https://coveralls.io/repos/github/DarkEnergyScienceCollaboration/SLCosmo/badge.svg?branch=master)](https://coveralls.io/github/DarkEnergyScienceCollaboration/SLCosmo?branch=master)
 
 Cosmological parameter inference from samples of time delay lenses, 
 initially in the context of the second [Time Delay 
@@ -12,7 +13,7 @@ Hubble constant, H0.
 
 ## Demo
 
-* Coming soon...
+* [Round Trip Test](https://github.com/drphilmarshall/SLCosmo/blob/master/notebooks/RoundTrip.ipynb) - put in an H0, generate a mock TDC2 submission, see if we can recover H0. 
 
 ## People
 * [Phil Marshall](https://github.com/DarkEnergyScienceCollaboration/SLCosmo/issues/new?body=@drphilmarshall) (SLAC)
