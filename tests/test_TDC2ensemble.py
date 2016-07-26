@@ -48,6 +48,10 @@ class TDC2ensembleTestCase(unittest.TestCase):
         self.assertAlmostEqual(four_image.DeltaFP_err[2], 42.0078296141)
 
     def test_read_write(self):
+        """
+        Test the consistency of an object created with .read_in_from
+        with the original which persisted its state via .write_out_to.
+        """
         two_image_temp_file = 'two_image_temp.txt'
         two_image = desc.slcosmo.TDC2ensemble.read_in_from(self.two_image_file)
         two_image.write_out_to(two_image_temp_file)
@@ -61,8 +65,11 @@ class TDC2ensembleTestCase(unittest.TestCase):
         four_image = desc.slcosmo.TDC2ensemble.read_in_from(self.four_image_file)
         four_image.write_out_to(four_image_temp_file)
         temp_image = desc.slcosmo.TDC2ensemble.read_in_from(four_image_temp_file)
-        self.assertEqual(four_image.DeltaFP_obs[0], temp_image.DeltaFP_obs[0])
-        self.assertEqual(four_image.DeltaFP_err[0], temp_image.DeltaFP_err[0])
+        for i in range(3):
+            self.assertEqual(four_image.DeltaFP_obs[i],
+                             temp_image.DeltaFP_obs[i])
+            self.assertEqual(four_image.DeltaFP_err[i],
+                             temp_image.DeltaFP_err[i])
         self.assertTrue(np.allclose(four_image.dt_obs, temp_image.dt_obs))
         os.remove(four_image_temp_file)
 

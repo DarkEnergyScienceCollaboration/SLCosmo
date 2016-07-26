@@ -49,6 +49,7 @@ class SLCosmo(object):
         self.tdc2samplefiles = []
         self.log_likelihoods = None
         self.weights = None
+        self.mock_files = []
         return
 
     def make_some_mock_data(self, Nlenses=100, Nsamples=1000,
@@ -124,7 +125,7 @@ class SLCosmo(object):
             self.lenses[k].Q = Q
             # BUG: ALL OF THE ABOVE SHOULD PROBABLY BE HANDLED BY A "LOAD" METHOD
             self.lenses[k].write_out_to(filename)
-
+            self.mock_files.append(filename)
         return
 
     def read_in_time_delay_samples(self, tdc2samplefiles):
