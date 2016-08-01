@@ -35,7 +35,8 @@ class TDC2ensemble(object):
         self.dt_obs = []
         return
 
-    def read_in_from(self, tdc2samplefile):
+    @staticmethod
+    def read_in_from(tdc2samplefile):
         """
         Read in both the posterior sample time delays and the Fermat potential header information, and store it for re-use.
 
@@ -43,6 +44,11 @@ class TDC2ensemble(object):
         -----------
         tdc2samplefile : string
                        Name of the file to read from.
+
+        Returns:
+        --------
+        TDC2ensemble object
+            A TDC2ensemble object filled with the read in data.
 
         Notes:
         ------
@@ -58,16 +64,30 @@ class TDC2ensemble(object):
         4. Samples are not 2D numpy array
         5. Array has wrong number of columns (time delays - should be 1 or 3, and equal to Ndt)
         """
-        self.source = tdc2samplefile
-        # input = open(tdc2samplefile, "w")
-        # input.read(self.header) - this needs work....
-        # input.close()
-        self.dt_obs = np.loadtxt(self.source) #, skiprows=18)
-        # BUG: THIS SHOULD BE A DATAFRAME, REALLY, WITH COLUMN HEADERS
-        self.Nsamples = len(self.dt_obs)
-        # BUG: HEADER INFORMATION NEEDS TO BE READ IN AS WELL
-        # BUG: NEED TO STORE NO OF DELAYS AS WELL AS NO OF SAMPLES
-        return
+        my_object = TDC2ensemble()
+        my_object.source = tdc2samplefile
+        my_object._read_header()
+        my_object.dt_obs = np.loadtxt(my_object.source)
+        if len(my_object.dt_obs.shape) == 1:
+            my_object.Nim = 2
+        else:
+            my_object.Nim = 4
+        my_object.Nsamples = len(my_object.dt_obs)
+        return my_object
+
+    def _read_header(self):
+        self.DeltaFP_obs = []
+        self.DeltaFP_err = []
+        with open(self.source) as input_:
+            for line in input_:
+                if line.startswith('# Q'):
+                    self.Q = float(line.strip().split(':')[1])
+                if line.startswith('# Delta'):
+                    key, value = line.strip()[1:].split(':')
+                    if key.find('err') != -1:
+                        self.DeltaFP_err.append(float(value))
+                    else:
+                        self.DeltaFP_obs.append(float(value))
 
     def write_out_to(self, tdc2samplefile):
         """

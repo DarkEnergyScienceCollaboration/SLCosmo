@@ -1,6 +1,8 @@
 """
 Scientific tests for SLCosmo package
 """
+import matplotlib
+matplotlib.use('Agg')
 import unittest
 import desc.slcosmo
 

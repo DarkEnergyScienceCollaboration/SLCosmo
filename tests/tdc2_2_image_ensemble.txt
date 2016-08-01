@@ -1,0 +1,36 @@
+# Time Delay Challenge 2 Posterior Sample Time Delays
+# 
+# Notes:
+# * Time delays should be given in days. Positive dt_AB means that light
+#   curve A leads (not lags) light curve B.
+# * Q is the H0-free time delay distance, a function of zd, zs and
+#   cosmology. Q has units of km / s: D_dt = Q / H0
+# * Fermat potential differences DeltaFP are given in units of
+#   day km / s / Mpc, such that the predicted time delay is
+#   dt = (Q / (c * H0)) * DeltaFP,  in days. c = 3.00e5 km/s
+# 
+# Q: 433875.502272
+# DeltaFP_AB: 885.602408386
+# DeltaFP_AB_err: 34.0959154248
+# 
+#                  dt_AB
+1.987088880288152737e+01
+1.626374646464119067e+01
+1.698291728777093823e+01
+1.473031856447618893e+01
+1.648452888763556246e+01
+1.835697319896681989e+01
+1.738505838273909632e+01
+1.655732282325294236e+01
+1.623506469928808826e+01
+1.911154179182770463e+01
+1.547031257475249255e+01
+1.616928687311914459e+01
+2.043499989838898401e+01
+1.856626334671780754e+01
+1.610541285694370828e+01
+1.642435779757885328e+01
+1.312135245136824935e+01
+2.007935036866116008e+01
+1.567913310992257081e+01
+2.096096778176223197e+01
