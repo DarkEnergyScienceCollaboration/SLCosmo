@@ -155,8 +155,13 @@ class SLCosmo(object):
             tdc2samplefiles = paths
         self.Nlenses = len(tdc2samplefiles)
         self.lenses = [] # trashing any existing data we may have had.
+        quad_count = 0
         for tdc2samplefile in tdc2samplefiles:
             self.lenses.append(desc.slcosmo.TDC2ensemble.read_in_from(tdc2samplefile))
+            if self.lenses[-1].Nim == 4:
+                quad_count += 1
+        print("Read in", self.Nlenses, "lenses, quad fraction =",
+              np.round(float(quad_count)/float(self.Nlenses), 2))
         return
 
     def draw_some_prior_samples(self, Npriorsamples=1000):
