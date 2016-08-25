@@ -68,6 +68,7 @@ class TDC2ensemble(object):
         my_object.source = tdc2samplefile
         my_object._read_header()
         my_object.dt_obs = np.loadtxt(my_object.source)
+
         if len(my_object.dt_obs.shape) == 1:
             my_object.Nim = 2
         else:
@@ -88,6 +89,8 @@ class TDC2ensemble(object):
                         self.DeltaFP_err.append(float(value))
                     else:
                         self.DeltaFP_obs.append(float(value))
+        self.DeltaFP_obs = np.array(self.DeltaFP_obs)
+        self.DeltaFP_err = np.array(self.DeltaFP_err)
 
     def write_out_to(self, tdc2samplefile):
         """
@@ -105,6 +108,7 @@ class TDC2ensemble(object):
         1. Samples array has no samples in it, even if Nsamples is not None
         2. File is not actually written
         """
+
         if self.Nsamples is None:
             print("No samples to write out, skipping.")
         else:

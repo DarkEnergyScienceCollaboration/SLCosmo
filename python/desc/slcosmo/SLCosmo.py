@@ -53,7 +53,8 @@ class SLCosmo(object):
         return
 
     def make_some_mock_data(self, Nlenses=100, Nsamples=1000,
-                            percentage_dfp_err=4.0, dt_sigma=2.0):
+                            percentage_dfp_err=4.0, dt_sigma=2.0,
+                            quad_fraction=0.17, stem='mock'):
         '''
         Make a mock dataset of any number of lens systems, and write it
         out in a set of correctly formatted files.
@@ -71,6 +72,8 @@ class SLCosmo(object):
         dt_sigma : float
                 The absolute uncertainty in each and every time delay,
                 in days. Another simple approximation.
+        quad_fraction : float
+                The fraction of lenses that have 4 images.
 
         Notes:
         ------
@@ -86,11 +89,11 @@ class SLCosmo(object):
         assert dt_sigma > 0.0
         self.Nlenses = Nlenses
         self.lenses = []
+        self.mock_files = []
         self.cosmotruth['H0'] = 72.3
         for k in range(self.Nlenses):
 
             # How many images does this lens have?
-            quad_fraction = 0.17
             if np.random.rand() < quad_fraction:
                 Nim = 4
             else:
@@ -110,12 +113,13 @@ class SLCosmo(object):
                           DeltaFP_err * np.random.rand(Ndt)
 
             # What are its posterior sample time delays?
-            dt_sigma = dt_sigma * np.ones(Ndt)
-            dt_obs = dt_true + dt_sigma * np.random.randn(Nsamples, Ndt)
+            dt_sigma_array = dt_sigma * np.ones(Ndt)
+            dt_obs = dt_true + \
+                     dt_sigma_array * np.random.randn(Nsamples, Ndt)
 
             # Create a TDC2 ensemble object and have it write
             # itself out:
-            filename = 'mock_time_delays_'+str(k)+'.txt'
+            filename = stem+'_time_delays_'+str(k)+'.txt'
             self.lenses.append(desc.slcosmo.TDC2ensemble())
             self.lenses[k].Nsamples = Nsamples
             self.lenses[k].Nim = Nim
@@ -123,12 +127,11 @@ class SLCosmo(object):
             self.lenses[k].DeltaFP_obs = DeltaFP_obs
             self.lenses[k].DeltaFP_err = DeltaFP_err
             self.lenses[k].Q = Q
-            # BUG: ALL OF THE ABOVE SHOULD PROBABLY BE HANDLED BY A "LOAD" METHOD
             self.lenses[k].write_out_to(filename)
             self.mock_files.append(filename)
         return
 
-    def read_in_time_delay_samples(self, tdc2samplefiles):
+    def read_in_time_delay_samples_from(self, paths):
         '''
         Ingest time delay data from a number of TDC2 submission files,
         storing it in a list of `TDC2ensemble` objects, one for each
@@ -136,8 +139,8 @@ class SLCosmo(object):
 
         Parameters:
         -----------
-        tdc2samplefiles : list of strings
-                        The names of the files to be read from.
+        paths : [list of] string[s[]
+            A list of the files to be read from, or a string containing wildcards.
 
         Notes:
         ------
@@ -145,6 +148,11 @@ class SLCosmo(object):
         header marked by '#' marks at the start of each line and
         containing a set of Fermat potential information that we need.
         '''
+        if type(paths) is str:
+            import glob
+            tdc2samplefiles = glob.glob(paths)
+        else:
+            tdc2samplefiles = paths
         self.Nlenses = len(tdc2samplefiles)
         self.lenses = [] # trashing any existing data we may have had.
         for tdc2samplefile in tdc2samplefiles:

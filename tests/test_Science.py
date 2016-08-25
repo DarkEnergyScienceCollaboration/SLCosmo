@@ -19,7 +19,9 @@ class SLCosmoScienceTestCase(unittest.TestCase):
             os.remove(mock_file)
 
     def test_round_trip(self):
-        self.Lets.make_some_mock_data(Nlenses=10, Nsamples=20)
+        self.Lets.make_some_mock_data(Nlenses=10, Nsamples=20,
+                                      stem='roundtrip')
+        self.Lets.read_in_time_delay_samples_from('roundtrip*.txt')
         self.Lets.draw_some_prior_samples(Npriorsamples=100)
         self.Lets.compute_the_joint_log_likelihood()
         self.Lets.report_the_inferred_cosmological_parameters()
