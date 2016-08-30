@@ -5,10 +5,12 @@ import desc.slcosmo
 
 class TDC2ensembleTestCase(unittest.TestCase):
     def setUp(self):
-        self.two_image_file = os.path.join(os.environ['SLCOSMO_DIR'], 'tests',
+        self.two_image_file = os.path.join(os.environ['SLCOSMO_DIR'],
+                                           'tests',
                                            'tdc2_2_image_ensemble.txt')
-        self.four_image_file = os.path.join(os.environ['SLCOSMO_DIR'], 'tests',
-                                            'tdc2_4_image_ensemble.txt')
+        self.four_image_file = os.path.join(os.environ['SLCOSMO_DIR'],
+                                           'tests',
+                                           'tdc2_4_image_ensemble.txt')
 
     def tearDown(self):
         pass
