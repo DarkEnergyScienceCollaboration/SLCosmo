@@ -17,6 +17,7 @@ Hubble constant, H0.
 
 ## People
 * [Phil Marshall](https://github.com/DarkEnergyScienceCollaboration/SLCosmo/issues/new?body=@drphilmarshall) (SLAC)
+* Tom Collett (Portsmouth)
 
 ## License, etc.
 
